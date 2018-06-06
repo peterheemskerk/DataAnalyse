@@ -1,9 +1,16 @@
 # This program produces two dictionaries that make retrieving the information
 # about the stations and the attributes smoother in programs that import this.
+# It also contains a useful helper function that can calculate the number of
+# days between 1901/01/01 and any given date after that.
 
-_PATH_KNMI = ""
+PATH = "../KNMI.txt"
+
 _START_CHAR_STN = 690
 _START_CHAR_ATT = 3554
+
+_YEAR0 = 1901
+_MONTH0 = 1
+_DAY0 = 1
 
 stn = dict()
 attributes = dict()
@@ -63,7 +70,29 @@ def _read_stations(filename):
             line = text.readline()[2:-1]
 
 
-def main(filename):
+# Return the number of days that have passed between "time" and 1901/01/01
+def get_t(time):
+    year = time // 10000
+    d_year = year - _YEAR0
+    time -= year * 10000
+    d_month = time // 100 - _MONTH0
+    d_day = time % 100 - _DAY0
+
+    t = d_year * 365 + d_year // 4
+    t += d_month * 31 - d_month // 2
+    if d_month >= 2:
+        t -= 2
+
+        if year % 4 == 0:
+            t += 1
+
+        if d_month >= 8:
+            t += 1
+
+    return t + d_day
+
+
+def _main(filename):
     if not filename:
         filename = input("Type the relative path to your KNMI text file: ")
 
@@ -71,4 +100,4 @@ def main(filename):
     _read_attributes(filename)
 
 
-main(_PATH_KNMI)
+_main(PATH)
