@@ -6,9 +6,12 @@
 
 import numpy as np
 
+import KNMI
+
 START_CHAR = 6548
-ATR_THRESH = 0.4
-ENT_THRESH = 0.4
+ATR_THRESH = 0.6
+ENT_THRESH = 0.6
+
 
 # Write all entries to a new file that only takes entries and atributes that
 # occur a certain percentage of the time.
@@ -79,7 +82,7 @@ def to_csv(filename):
 
 
 def main():
-    filename = input("Give the relative path to your KNMI text file: ")
+    filename = KNMI.PATH
 
     print("Converting", filename, "to a .csv file...", end=' ', flush=True)
     csv_filename, n_lines = to_csv(filename)
@@ -96,5 +99,6 @@ def main():
     reduced_filename, n_lines = reduce_entries(csv_filename, atributes)
     print("Done.\nThe new file is called", reduced_filename, "and has", n_lines,
           "entries.")
+
 
 main()

@@ -3,7 +3,7 @@
 # It also contains a useful helper function that can calculate the number of
 # days between 1901/01/01 and any given date after that.
 
-PATH = "../KNMI.txt"
+PATH = ""
 
 _START_CHAR_STN = 690
 _START_CHAR_ATT = 3554
@@ -70,8 +70,10 @@ def _read_stations(filename):
             line = text.readline()[2:-1]
 
 
-# Return the number of days that have passed between "time" and 1901/01/01
 def get_t(time):
+    """Returns the number of days between 'time' and 1901/01/01.\n
+    time = any date after 1901/01/01"""
+
     year = time // 10000
     d_year = year - _YEAR0
     time -= year * 10000
@@ -92,14 +94,16 @@ def get_t(time):
     return t + d_day
 
 
-def _main(filename):
+def _main():
+    global PATH
     try:
-        open(filename)
+        open(PATH)
     except IOError:
-        filename = input("Type the relative path to your KNMI text file: ")
+        PATH = input("Type the relative path to your KNMI text file: ")
 
+    filename = PATH
     _read_stations(filename)
     _read_attributes(filename)
 
 
-_main(PATH)
+_main()
