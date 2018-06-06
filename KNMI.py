@@ -93,7 +93,9 @@ def get_t(time):
 
 
 def _main(filename):
-    if not filename:
+    try:
+        open(filename)
+    except IOError:
         filename = input("Type the relative path to your KNMI text file: ")
 
     _read_stations(filename)
