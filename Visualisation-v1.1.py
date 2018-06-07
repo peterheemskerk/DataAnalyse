@@ -106,14 +106,30 @@ def plot_att_year(df, stn_arr, att, start=19010101, end=20991231, markers=MARKER
     plt.show()
 
 
+def boxplot_att(df, att, start=19010101, end=20991231):
+    df.boxplot(by='STN', column=[att], grid=False)
+    plt.xlabel('stations')
+    plt.ylabel(att)
+    plt.legend()
+    plt.show()
+
 def main():
     reduced_filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + ".csv"
     df = pd.read_csv(reduced_filename)
 
-    att = "UN"
+    att = 'NG'
+
+    data = df.loc[(df.STN > 210) & (df.STN < 280)]
+    boxplot_att(data, att)
+
+    data = df.loc[(df.STN >= 280) & (df.STN < 320)]
+    boxplot_att(data, att)
+
+    data = df.loc[(df.STN >= 320)]
+    boxplot_att(data, att)
+
     stations = []	
     # stations = [209, 210, 270, 286]	
-    print('nu plotten..attribute: ', att, 'stations: ', stations)
 
     plot_att_year(df, stations, att)
 
