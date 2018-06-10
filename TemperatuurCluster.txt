@@ -1,0 +1,121 @@
+temperatuur cluster
+
+TG    -  gemiddelde temperatuur van een dag in 0.1 graden celsius
+TN    -  Minimum temperatuur op een dag in 0.1 graden celsius
+TNH   -  uurvak waarin TN is gemeten
+TX    -  Maximum temperatuur op een dag in 0.1 graden celsius
+TXH   -  uurvak waarin TX is gemeten
+T10N  -  minimum temperatuur op 10 cm hoogte in 0.1 graden celsius
+T10NH -  6-uurs tijdvak waarin T10N is gemeten
+
+In het temperatuur cluster wordt per dag gemeten wat de maximum, minimum en gemiddelde temperatuur was. 
+Voor de maximum en minimum temperatuur wordt ook aangegeven in welk uurvak dit gemeten was(Uurvak 12 is tussen 11 en 12 uur, uurvak 18 is tussen 17 en 18 uur).
+Als laatste wordt er ook nog gemeten wat de minimum temperatuur was op 10 cm hoogte. Bij deze waarde is er een 6-uurs vak(dus uurvak 12 is van 6 uur tot 12 uur).
+Alle temperaturen zijn in 0.1 graden celsius gemeten.
+
+
+
+
+TG
+Totale waarde: 794232
+644446 ingevulde waarde
+149786 NaN waarde (18.9 procent)
+446 verschillende waardes
+
+Stations die alleen maar NaN waarde hebben voor TG: 209, 248, 258, 285, 308, 311, 312, 313, 315, 316, 324, 331
+
+De beste manier op dit attribuut te visualiseren is om voor elk seizoen van elk jaar gemiddelde's te nemen. Je kan mogelijk ook alleen naar de verandering van deze gemiddelde's kijken. Zo kan je zien of de winters kouder worden, de zomers warmer etc.
+
+
+
+
+TN
+Totale waarde: 794232
+641884 ingevulde waarde
+152348 NaN waarde (19.2 procent)
+451 verschillende waardes
+
+Stations die alleen maar NaN waarde hebben voor TN: 209, 248, 258, 285, 308, 311, 312, 313, 315, 316, 324, 331
+
+De minimum temperatuur moet samen met de maximum temperatuur gevisualiseerd worden. Het verschil tussen minimum en maximum is een waarde die veel zegt over het klimaat.
+
+
+
+
+TNH
+Totale waarde: 794232 
+558142 waarden tussen 1-24 (geldige waarde)
+236087 NaN waarde (29.7 procent)
+3 ongeldige waarden(0, 80, 92)
+
+Stations die alleen maar NaN waarde hebben voor TNH: 209, 248, 258, 285, 308, 311, 312, 313, 315, 316, 324, 331
+
+Meest voorkomende waarde: 24 (111857)
+
+31.8 procent is in het uurvak 24 of 1, dus 31.8 procent ligt tussen 11 uur s'avonds en 1 uur s'ochtends(31.8 procent = 177724 waardes)
+
+De beste manier om dit attribuut te visualiseren lijkt mij een frequentie tabel. Voor de minimum temperatuur zal deze erg veel op een dalparabool lijken.
+
+
+
+
+TX
+Totale waarde: 794232
+641926 ingevulde waardes
+152306 NaN waardes (19.2 procent)
+503 verschillende waardes
+
+Stations die alleen maar NaN waarde hebben voor TX: 209, 248, 258, 285, 308, 311, 312, 313, 315, 316, 324, 331
+
+
+
+
+TXH
+Totale waarde: 794232
+558186 waarden tussen 1-24 (geldige waarde)
+236045 NaN waarde (29.7 procent)
+1 ongeldige waarde (50)
+
+Stations die alleen maar NaN waarde hebben voor TNH: 209, 248, 258, 285, 308, 311, 312, 313, 315, 316, 324, 331
+
+Meest voorkomende waarde: 14 (121005)
+
+66.1 procent ligt tussen 11 uur s'ochtends en 3 uur s'middags(66.1 procent = 368935 waardes, uurvakken 12,13,14,15)
+79.6 procent ligt tussen 10 uur s'ochtends en 4 uur s'middags(79.6 procent = 444213 waardes, uurvakken 11,12,13,14,15,16)
+
+Dit attribuut kan je ook het beste met een frequentie tabel visualiseren. Voor de maximum temperatuur zal deze erg veel op een bergparabool lijken
+
+
+
+
+T10N
+Totale waarde: 794232
+427489 ingevulde waarde
+366743 NaN waarde (46.17 procent)
+453 verschillende waardes
+
+Stations die alleen maar NaN waarde hebben voor T10N: 209, 225, 248, 258, 285, 308, 311, 312, 313, 315, 316, 324, 331, 343
+
+Dit attribuut mist meer dan 40 procent en kan beter geschrapt worden
+
+
+
+
+T10NH
+Totale waarde: 794232
+291272 ingevulde waarde
+502960 NaN waarde (63.32 procent)
+4 verschillende waardes
+
+Stations die alleen maar NaN waarde hebben voor T10NH: 209, 225, 248, 258, 285, 308, 311, 312, 313, 315, 316, 324, 331, 343
+
+Dit attribuut mist meer dan 40 procent en kan beter geschrapt worden
+
+
+
+
+
+
+
+
+
