@@ -82,6 +82,26 @@ def avg_over_year_all_stn(df, att, start=19010101, end=20991231):
 
     return np.array(att_avg), np.array(years)
 
+def avg_over_month_all_stn(df, att, start=19010101, end=20991231):
+    """Returns a tuple of the values of the given attribute and the years.\n
+    df = pandas.DataFrame, all the data extracted from your csv file.\n
+    average over all stations.\n
+    att = attribute\n
+    start = start date\n
+    end = end date"""
+
+    att_arr, t_arr = get_attribute_all_stn(df, att, start, end)
+
+    months = []
+    att_avg = []
+    for month in range(1, 12):
+        att = att_arr[(t_arr // 100) % 100 == month]
+
+        if len(att) > 0:
+            months.append(month)
+            att_avg.append(np.nanmean(att))		# used nanmean to ignore nan values
+
+    return np.array(att_avg), np.array(months)
 
 def plot_att_year(df, stn_arr, att, start=19010101, end=20991231, markers=MARKERS):
     """Plot the average value of an attribute over a year from multiple stations
@@ -106,6 +126,30 @@ def plot_att_year(df, stn_arr, att, start=19010101, end=20991231, markers=MARKER
     plt.show()
 
 
+def plot_att_month(df, stn_arr, att, start=19010101, end=20991231, markers=MARKERS):
+    """Plot the average value of an attribute over a year from multiple stations
+    \ndf = pandas.DataFrame, all data extracted from your csv file.\n
+    stn_arr = station array, an array of the numbers or names of the stations.\n
+    att = attribute\n
+    start = start date\n
+    end = end date\n
+    markers = a list of the shape and color of the markers in the plot."""
+    
+    if stn_arr == []:
+        att_arr, months = avg_over_month_all_stn(df, att, start, end)
+        plt.plot(months, att_arr, markers[0], label = 'all stations')
+    else:
+        print('not implemented yet')
+        '''
+        for i, stn in enumerate(stn_arr):
+            att_arr, years = avg_over_year(df, stn, att, start, end)
+            plt.plot(years, att_arr, markers[i], label=KNMI.stn[stn].name)
+        '''
+    plt.xlabel("Maanden")
+    plt.ylabel(KNMI.attributes[att])
+    plt.legend()
+    plt.show()
+
 def boxplot_att(df, att, start=19010101, end=20991231):
     df.boxplot(by='STN', column=[att], grid=False)
     plt.xlabel('stations')
@@ -117,8 +161,12 @@ def main():
     reduced_filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + ".csv"
     df = pd.read_csv(reduced_filename)
 
-    att = 'NG'
+    att = 'UN'
+    stations = []
 
+    plot_att_month(df, stations, att)
+
+    '''
     data = df.loc[(df.STN > 210) & (df.STN < 280)]
     boxplot_att(data, att)
 
@@ -132,5 +180,6 @@ def main():
     # stations = [209, 210, 270, 286]	
 
     plot_att_year(df, stations, att)
+    '''
 
 main()
