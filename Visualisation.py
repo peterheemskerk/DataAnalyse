@@ -159,6 +159,12 @@ def avg_over_year(df, stn, att, start=19010101, end=20991231):
 
 
 def measured_months_stn(df, stn, att=None, start=19010101, end=20991231):
+    """Return the number of entries from a station for each month.\n
+    df = pandas.DataFrame, all data extracted from your csv file.\n
+    stn = station.\n
+    att = attribute\n
+    start = start date\n
+    end = end date\n"""
 
     dates = []
     if att:
@@ -181,6 +187,12 @@ def measured_months_stn(df, stn, att=None, start=19010101, end=20991231):
 
 
 def measured_years_stn(df, stn, att=None, start=19010101, end=20991231):
+    """Return the number of entries from a station for each year.\n
+    df = pandas.DataFrame, all data extracted from your csv file.\n
+    stn = station.\n
+    att = attribute\n
+    start = start date\n
+    end = end date\n"""
 
     dates = []
     if att:
@@ -339,6 +351,13 @@ def plot_att_year(df, stn_arr, att, start=19010101, end=20991231,
 
 def plot_measure_month(df, stn_arr, att=None, start=19010101, end=20991231,
                        colors=COLORS):
+    """Plot the number of entries the array of stations have gathered each month
+    \ndf = pandas.DataFrame, all data extracted from your csv file.\n
+    stn_arr = station array, an array of the numbers or names of the stations.\n
+    att = attribute\n
+    start = start date\n
+    end = end date\n
+    colors = a list of colors in the plot."""
 
     all_stn = len(stn_arr) < 1
     if all_stn:
@@ -370,48 +389,60 @@ def plot_measure_month(df, stn_arr, att=None, start=19010101, end=20991231,
     plt.show()
 
 
-# def plot_measure_year(df, stn_arr, att=None, start=19010101, end=20991231,
-#                       colors=COLORS):
+def plot_measure_year(df, stn_arr, att=None, start=19010101, end=20991231,
+                      colors=COLORS):
+    """Plot the number of entries the array of stations have gathered each year.
+    \ndf = pandas.DataFrame, all data extracted from your csv file.\n
+    stn_arr = station array, an array of the numbers or names of the stations.\n
+    att = attribute\n
+    start = start date\n
+    end = end date\n
+    colors = a list colors in the plot."""
 
-#     all_stn = len(stn_arr) < 1
-#     if all_stn:
-#         stn_arr = np.array(KNMI.Station.all_num)
+    all_stn = len(stn_arr) < 1
+    if all_stn:
+        stn_arr = np.array(KNMI.Station.all_num)
 
-#     years = np.arange(start // 10000, start // 10000 + 1)
-#     counts = np.zeros(len(years), len(stn_arr))
-#     for i, stn in enumerate(stn_arr):
-#         mes_arr, _ = measured_years_stn(df, stn, att, start, end)
-#         counts[i] = mes_arr
+    years = np.arange(start // 10000, end // 10000 + 1)
+    counts = np.zeros([len(stn_arr), len(years)])
+    for i, stn in enumerate(stn_arr):
+        mes_arr, _ = measured_years_stn(df, stn, att, start, end)
+        counts[i] = mes_arr
 
-#     bottom = np.zeros(len(years))
-#     for i, count in counts:
+    mask = np.any(counts, axis=0)
+    counts = counts[:, mask]
+    years = years[mask]
 
-#         if all_stn:
-#             plt.bar(count, att_arr, bottom=bottom, color=colors[0])
+    bottom = np.zeros(len(years))
+    for i, count in enumerate(counts):
 
-#         else:
-#             plt.bar(count, att_arr, bottom=bottom, color=colors[i],
-#                     label=KNMI.stn[stn].name)
+        if all_stn:
+            plt.bar(years, count, bottom=bottom, color=colors[0])
 
-#         bottom += att_arr
+        else:
+            plt.bar(years, count, bottom=bottom, color=colors[i],
+                    label=KNMI.stn[stn_arr[i]].name)
 
-#     plt.xlabel("Jaren")
+        bottom += count
 
-#     if not all_stn:
-#         plt.legend()
+    plt.xlabel("Jaren")
 
-#     if att:
-#         plt.ylabel("Number of entries of: " + att)
-#     else:
-#         plt.ylabel("Number of entries")
+    if not all_stn:
+        plt.legend()
 
-#     plt.show()
+    if att:
+        plt.ylabel("Number of entries of: " + att)
+    else:
+        plt.ylabel("Number of entries")
+
+    plt.show()
 
 
 def main():
     reduced_filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + ".csv"
     df = pd.read_csv(reduced_filename)
 
+    plot_measure_year(df, [])
     plot_measure_month(df, [])
     plot_measure_month(df, [210, 235, 240, 242], "FXX", end=19800101)
 
