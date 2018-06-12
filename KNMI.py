@@ -3,7 +3,7 @@
 # It also contains a useful helper function that can calculate the number of
 # days between 1901/01/01 and any given date after that.
 
-PATH = "../KNMI.txt"
+PATH = "../../Python/KNMI.txt"
 
 _START_CHAR_STN = 690
 _START_CHAR_ATT = 3554
