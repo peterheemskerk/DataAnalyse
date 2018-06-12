@@ -3,7 +3,7 @@
 # It also contains a useful helper function that can calculate the number of
 # days between 1901/01/01 and any given date after that.
 
-PATH = "../../Python/KNMI.txt"
+PATH = "../KNMI.txt"
 
 _START_CHAR_STN = 690
 _START_CHAR_ATT = 3554
@@ -18,12 +18,16 @@ attributes = dict()
 # The station class stores some information about each station
 class Station:
 
+    all_num = []
+
     def __init__(self, num, name, lon, lat, alt):
         self.num = num
         self.name = name
         self.lon = lon
         self.lat = lat
         self.alt = alt
+
+        Station.all_num.append(self.num)
 
     def __str__(self):
         return "STN " + str(self.num) + ":\"" + self.name + "\""
