@@ -161,7 +161,7 @@ def main():
     reduced_filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + ".csv"
     df = pd.read_csv(reduced_filename)
 
-    att = 'UN'
+    att = 'PN'
     stations = []
 
     plot_att_month(df, stations, att)
