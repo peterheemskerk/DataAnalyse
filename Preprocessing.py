@@ -5,6 +5,7 @@
 # removed that don't occur often enough.
 
 import numpy as np
+import pandas as pd
 
 import KNMI
 
@@ -99,6 +100,12 @@ def main():
     reduced_filename, n_lines = reduce_entries(csv_filename, atributes)
     print("Done.\nThe new file is called", reduced_filename, "and has", n_lines,
           "entries.")
+    
+    # Fills in NAN values with mean of the column
 
+    df = pd.read_csv(reduced_filename)
+    df = df.fillna(df.mean())
+    print(df)
+    df.to_csv('FINAL_CSV_FILE.csv')
 
 main()
