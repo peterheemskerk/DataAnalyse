@@ -437,6 +437,12 @@ def plot_measure_year(df, stn_arr, att=None, start=19010101, end=20991231,
 
     plt.show()
 
+def covariance(atr1,atr2):
+    filename = KNMI.PATH
+    final_filename = filename[:filename.rindex('.')] + "_final.csv"
+    df = pd.read_csv(final_filename)
+    corr = df[atr1].corr(df[atr2])
+    print(corr)
 
 def main():
     reduced_filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + ".csv"
@@ -447,4 +453,4 @@ def main():
     plot_measure_month(df, [210, 235, 240, 242], "FXX", end=19800101)
 
 
-main()
+covariance('TG','TX')

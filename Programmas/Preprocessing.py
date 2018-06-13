@@ -106,6 +106,7 @@ def main():
     df = pd.read_csv(reduced_filename)
     df = df.fillna(df.mean())
     print('Filling in the gaps')
-    df.to_csv('FINAL_CSV_FILE.csv')
+    final_filename = reduced_filename[:reduced_filename.rindex('_')] + "_final.csv"
+    df.to_csv(final_filename)
 
 main()
