@@ -88,25 +88,25 @@ def main():
     print("Converting", filename, "to a .csv file...", end=' ', flush=True)
     csv_filename, n_lines = to_csv(filename)
     print("Done.\nThe new file is called", csv_filename, "and has", n_lines,
-          "entries.")
+          "entries.\n")
 
     print("Find out which attributes have data in at least", ATR_THRESH * 100,
           "percent of the entries...", end=' ', flush=True)
     atributes = find_valid_atributes(csv_filename)
-    print("Done.\nThe valid attributes are:", atributes)
+    print("Done.\nThe valid attributes are:", atributes, "\n")
 
     print("Remove invalid attributes and entries that don't have at least",
           ENT_THRESH * 100, "percent of the attributes...", end=' ', flush=True)
     reduced_filename, n_lines = reduce_entries(csv_filename, atributes)
     print("Done.\nThe new file is called", reduced_filename, "and has", n_lines,
-          "entries.")
-    
-    # Fills in NAN values with mean of the column
+          "entries.\n")
 
+    print("Fill in all missing values with the mean of it's attribute...",
+          end=' ', flush=True)
     df = pd.read_csv(reduced_filename)
     df = df.fillna(df.mean())
-    print('Filling in the gaps')
     final_filename = reduced_filename[:reduced_filename.rindex('_')] + "_final.csv"
     df.to_csv(final_filename)
+    print("Done.\nThe new file is called", final_filename)
 
 main()

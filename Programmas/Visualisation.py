@@ -495,37 +495,15 @@ def plot_measure_year(df, stn_arr, att=None, start=19010101, end=20991231,
 
     plt.show()
 
-def plot_att_month(df, stn_arr, att, start=19010101, end=20991231, markers=MARKERS):
-    """Plot the average value of an attribute over a year from multiple stations
-    \ndf = pandas.DataFrame, all data extracted from your csv file.\n
-    stn_arr = station array, an array of the numbers or names of the stations.\n
-    att = attribute\n
-    start = start date\n
-    end = end date\n
-    markers = a list of the shape and color of the markers in the plot."""
-    
-    if stn_arr == []:
-        att_arr, months = avg_over_month_all_stn(df, att, start, end)
-        plt.plot(months, att_arr, markers[0], label = 'all stations')
-    else:
-        print('not implemented yet')
-        '''
-        for i, stn in enumerate(stn_arr):
-            att_arr, years = avg_over_year(df, stn, att, start, end)
-            plt.plot(years, att_arr, markers[i], label=KNMI.stn[stn].name)
-        '''
-    plt.xlabel("Maanden")
-    plt.ylabel(KNMI.attributes[att])
-    plt.legend()
-    plt.show()
 
 def boxplot_att(df, att, start=19010101, end=20991231):
-    '''Plots a boxplot for an attribute grouped by station. Statement 'by='STN' can easily be removed''' 
+    '''Plots a boxplot for an attribute grouped by station. Statement 'by='STN' can easily be removed'''
     df.boxplot(by='STN', column=[att], grid=False)
     plt.xlabel('stations')
     plt.ylabel(att)
     plt.legend()
     plt.show()
+
 
 def covariance(atr1,atr2):
     filename = KNMI.PATH
@@ -533,6 +511,7 @@ def covariance(atr1,atr2):
     df = pd.read_csv(final_filename)
     corr = df[atr1].corr(df[atr2])
     print(corr)
+
 
 def main():
     reduced_filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + ".csv"
@@ -542,7 +521,7 @@ def main():
     att = 'UN'
     stations = []
     plot_att_month(df, stations, att)
-    
+
     # plot_measure_year(df, [])
     # plot_measure_month(df, [])
     plot_measure_month(df, [210, 215], "UN")
