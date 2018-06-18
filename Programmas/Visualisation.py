@@ -76,6 +76,12 @@ def get_attribute_all_stn(df, att, start=19010101, end=20991231):
 
 
 def avg_over_att_all_stn(df, xatt, yatt, start=19010101, end=20991231):
+    """Peter. Returns a tuple of the values of the two given attributes.\n
+    df = pandas.DataFrame, all the data extracted from your csv file.\n
+    xatt, yatt = attribute names\n
+    start = start date\n
+    end = end date"""
+
     data = df.loc[(df.YYYYMMDD >= start)
                   & (df.YYYYMMDD <= end), [xatt, yatt]].values
     xatt_arr, yatt_arr = data[:, 0], data[:, 1]
@@ -86,7 +92,9 @@ def avg_over_att_all_stn(df, xatt, yatt, start=19010101, end=20991231):
 
     xatts = []
     yatts = []
-    for xatt in set(xatt_arr):
+    for xatt in xatt_arr:
+        if np.isnan(xatt) or xatt in xatts:
+            continue
         yatt = yatt_arr[xatt_arr == xatt]
 
         if len(yatt) > 0:
@@ -543,19 +551,19 @@ def main():
     df_final = pd.read_csv(final_filename)
 
     att = input("Which attribute do you want to analyse? ")
-    att.higher()
+    att = att.upper()
 
-    print("\nNow analysing", KNMI.attributes[att])
+    print("You asked for:", KNMI.attributes[att])
 
     uni.att_values(df, att)
-    uni.boxplot_att(df, att, save=True)
-    uni.histogram_att(df, att, save=True)
+    uni.boxplot_att(df, att, save=False)
+    uni.histogram_att(df, att, save=False)
 
     plot_att_year(df, [], att)
     plot_att_month(df, [], att)
 
     for other_att in MEAN_ATTS:
-        print("Finding correlation of", KNMI.attributes[att], "with",
+        print("\nFinding correlation of", KNMI.attributes[att], "with",
                 KNMI.attributes[other_att])
         print("Correlation is", df_final[att].corr(df[other_att]))
 
@@ -566,7 +574,7 @@ def main():
             choice = input("Do you want regression over these two "
                             + "attributes?\nyes (y), no (n), "
                             + "yes with switched axis (s): ")
-            choice.lower()
+            choice = choice.lower()
 
         if choice == "y":
             poly = ml.try_poly_fit(trn, dev, att, other_att)

@@ -12,7 +12,9 @@ def mean_over_att(xatt_arr, yatt_arr):
     xatt_mean = []
     yatt_mean = []
 
-    for xatt in set(xatt_arr):
+    for xatt in np.sort(xatt_arr):
+        if np.isnan(xatt) or xatt in xatt_mean:
+            continue
         yatt = yatt_arr[xatt_arr == xatt]
 
         if len(yatt) > 1:
@@ -65,13 +67,13 @@ def seperate_trn_dev_tst(df, dev_perc=0.1, tst_perc=0.1):
     return np.split(df.sample(frac=1), [dev_part, tst_part])
 
 
-def try_poly_fit(trn, dev, xatt, yatt, max_dim=10, prec=0.1):
+def try_poly_fit(trn, dev, xatt, yatt, max_dips=3, prec=0.001):
     """Fits xatt and yatt to eachother for each polynomial up to the max_dim.
     And returns the best fit before overfitting.\n
     df = pandas.DataFrame, all the data extracted from your csv file.\n
     xatt, yatt = names of the attributes you want to fit.\n
-    max_dim = maximal dimension of the polynomial you want to fit.
-    prec = The minimal improvement a new dimension has to make."""
+    max_dips = Amount of times a new fit may have a higher squared error.
+    prec = Percentage of improvement a new fit must make."""
 
     values = trn.loc[:, [xatt, yatt]].dropna().values
     xatt_trn, yatt_trn = values[:, 0], values[:, 1]
@@ -79,18 +81,22 @@ def try_poly_fit(trn, dev, xatt, yatt, max_dim=10, prec=0.1):
     values = dev.loc[:, [xatt, yatt]].dropna().values
     xatt_dev, yatt_dev = values[:, 0], values[:, 1]
 
-    best_dim = None
+    best_dim = 0
     lowest_err = np.inf
-    for dim in range(1, max_dim + 1):
+
+    for dim in range(1, 24):
         poly = np.poly1d(np.polyfit(xatt_trn, yatt_trn, dim))
         sq_e = np.mean((yatt_dev - poly(xatt_dev)) ** 2)
         print("Mean squared error of dimension", dim, "is", sq_e)
 
-        if sq_e < lowest_err:
+        if sq_e < lowest_err * (1 - prec) ** (dim - best_dim):
             lowest_err = sq_e
             best_dim = dim
 
-    print("Maximal dimension is reached.\nBest dimension is", dim)
+        elif dim - best_dim >= max_dips:
+            break
+
+    print("Best dimension is", best_dim)
     return np.poly1d(np.polyfit(xatt_trn, yatt_trn, best_dim))
 
 
