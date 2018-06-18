@@ -542,46 +542,39 @@ def main():
     final_filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + "_final.csv"
     df_final = pd.read_csv(final_filename)
 
-    for att in df.columns.values[2:]:
-        print("\nNow analysing", KNMI.attributes[att])
+    att = input("Which attribute do you want to analyse? ")
+    att.higher()
 
-        uni.att_values(df, att)
-        uni.boxplot_att(df, att, save=True)
-        uni.histogram_att(df, att, save=True)
+    print("\nNow analysing", KNMI.attributes[att])
 
-        plot_att_year(df, [], att)
-        plot_att_month(df, [], att)
+    uni.att_values(df, att)
+    uni.boxplot_att(df, att, save=True)
+    uni.histogram_att(df, att, save=True)
+
+    plot_att_year(df, [], att)
+    plot_att_month(df, [], att)
+
+    for other_att in MEAN_ATTS:
+        print("Finding correlation of", KNMI.attributes[att], "with",
+                KNMI.attributes[other_att])
+        print("Correlation is", df_final[att].corr(df[other_att]))
+
+        plot_att_conditional(df, [], att, other_att)
 
         choice = ""
-        while choice != "y" and choice != "n":
-            choice = input("Do you want comparisons over this attribute?\n"
-                                + "yes (y), no (n): ")
+        while choice != "y" and choice != "n" and choice != "s":
+            choice = input("Do you want regression over these two "
+                            + "attributes?\nyes (y), no (n), "
+                            + "yes with switched axis (s): ")
             choice.lower()
 
-        if choice == "n":
-            continue
+        if choice == "y":
+            poly = ml.try_poly_fit(trn, dev, att, other_att)
+            ml.plot_poly(tst, poly, att, other_att)
 
-        for other_att in MEAN_ATTS:
-            print("Finding correlation of", KNMI.attributes[att], "with",
-                  KNMI.attributes[other_att])
-            print("Correlation is", df_final[att].corr(df[other_att]))
-
-            plot_att_conditional(df, [], att, other_att)
-
-            choice = ""
-            while choice != "y" and choice != "n" and choice != "s":
-                choice = input("Do you want regression over these two "
-                               + "attributes?\nyes (y), no (n), "
-                               + "yes with switched axis (s): ")
-                choice.lower()
-
-            if choice == "y":
-                poly = ml.try_poly_fit(trn, dev, att, other_att)
-                ml.plot_poly(tst, poly, att, other_att)
-
-            elif choice == "s":
-                poly = ml.try_poly_fit(trn, dev, other_att, att)
-                ml.plot_poly(tst, poly, other_att, att)
+        elif choice == "s":
+            poly = ml.try_poly_fit(trn, dev, other_att, att)
+            ml.plot_poly(tst, poly, other_att, att)
 
 
 if __name__ == "__main__":
