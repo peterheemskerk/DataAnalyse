@@ -18,18 +18,27 @@ def att_values(df, att):
     print("Standard Deviation: ",df[att].std())
 
 
-def boxplot_att(df, att, start=19010101, end=20991231):
+def boxplot_att(df, att, start=19010101, end=20991231, save=False):
     df.boxplot(column=[att], grid=False)
-    plt.ylabel(att)
-    plt.show()
+    plt.ylabel(KNMI.attributes[att])
+    if save:
+        plt.savefig("../../boxplot-" + att + ".png")
+        plt.close()
+    else:
+        plt.show()
 
 
-def histogram_att(df, att):
+def histogram_att(df, att, save=False):
     maxv = df[att].max()
     minv = df[att].min()
     diff = int(maxv-minv)
     df[att].hist(bins=diff, range=(minv,maxv))
-    plt.show()
+    plt.ylabel(KNMI.attributes[att])
+    if save:
+        plt.savefig("../../histogram-" + att + ".png")
+        plt.close()
+    else:
+        plt.show()
 
 
 def main():
@@ -43,4 +52,5 @@ def main():
     histogram_att(dataframe, Att)
 
 
-main()
+if __name__ == "__main__":
+    main()

@@ -79,22 +79,19 @@ def try_poly_fit(trn, dev, xatt, yatt, max_dim=10, prec=0.1):
     values = dev.loc[:, [xatt, yatt]].dropna().values
     xatt_dev, yatt_dev = values[:, 0], values[:, 1]
 
-    past_poly = None
-    past_err = np.inf
-    for i in range(1, max_dim + 1):
-        poly = np.poly1d(np.polyfit(xatt_trn, yatt_trn, i))
+    best_dim = None
+    lowest_err = np.inf
+    for dim in range(1, max_dim + 1):
+        poly = np.poly1d(np.polyfit(xatt_trn, yatt_trn, dim))
         sq_e = np.mean((yatt_dev - poly(xatt_dev)) ** 2)
-        print("Mean squared error of dimension", i, "is", sq_e)
+        print("Mean squared error of dimension", dim, "is", sq_e)
 
-        if sq_e + prec > past_err:
-            print("Overfitting is reached.\nBest dimension is", i - 1)
-            return past_poly
-        else:
-            past_poly = poly
-            past_err = sq_e
+        if sq_e < lowest_err:
+            lowest_err = sq_e
+            best_dim = dim
 
-    print("Maximal dimension is reached.\nDimension is", max_dim)
-    return past_poly
+    print("Maximal dimension is reached.\nBest dimension is", dim)
+    return np.poly1d(np.polyfit(xatt_trn, yatt_trn, best_dim))
 
 
 def main():
@@ -106,4 +103,5 @@ def main():
     plot_poly(tst, poly, "DDVEC", "FHVEC")
 
 
-main()
+if __name__ == "__main__":
+    main()

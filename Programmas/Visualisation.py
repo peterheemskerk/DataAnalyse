@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import KNMI
+import Univariate as uni
+import MachineLearning as ml
 
 COLORS = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
@@ -16,6 +18,8 @@ MARKERS = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko',
 
 SEASONS = {"spring": (321, 620), "summer": (621, 920), "autumn": (921, 1220),
            "winter": (1221, 320)}
+
+MEAN_ATTS = ["DDVEC", "FG", "TG", "Q", "PG", "UG"]
 
 vget_t = np.vectorize(KNMI.get_t)
 
@@ -71,6 +75,26 @@ def get_attribute_all_stn(df, att, start=19010101, end=20991231):
     return data[:, 1], data[:, 0]
 
 
+def avg_over_att_all_stn(df, xatt, yatt, start=19010101, end=20991231):
+    data = df.loc[(df.YYYYMMDD >= start)
+                  & (df.YYYYMMDD <= end), [xatt, yatt]].values
+    xatt_arr, yatt_arr = data[:, 0], data[:, 1]
+
+    mask = ~np.isnan(yatt_arr)
+    xatt_arr = xatt_arr[mask]
+    yatt_arr = yatt_arr[mask]
+
+    xatts = []
+    yatts = []
+    for xatt in set(xatt_arr):
+        yatt = yatt_arr[xatt_arr == xatt]
+
+        if len(yatt) > 0:
+            xatts.append(xatt)
+            yatts.append(np.mean(yatt))
+
+    return np.array(xatts), np.array(yatts)
+
 
 def avg_over_year_all_stn(df, att, start=19010101, end=20991231):
     """Peter. Returns a tuple of the values of the given attribute and the years.\n
@@ -82,6 +106,10 @@ def avg_over_year_all_stn(df, att, start=19010101, end=20991231):
 
     att_arr, t_arr = get_attribute_all_stn(df, att, start, end)
 
+    mask = ~np.isnan(att_arr)
+    att_arr = att_arr[mask]
+    t_arr = t_arr[mask]
+
     years = []
     att_avg = []
     for year in range(start // 10000, end // 10000 + 1):
@@ -89,7 +117,7 @@ def avg_over_year_all_stn(df, att, start=19010101, end=20991231):
 
         if len(att) > 0:
             years.append(year)
-            att_avg.append(np.nanmean(att))		# used nanmean to ignore nan values
+            att_avg.append(np.mean(att))
 
     return np.array(att_avg), np.array(years)
 
@@ -104,6 +132,10 @@ def avg_over_month_all_stn(df, att, start=19010101, end=20991231):
 
     att_arr, t_arr = get_attribute_all_stn(df, att, start, end)
 
+    mask = ~np.isnan(att_arr)
+    att_arr = att_arr[mask]
+    t_arr = t_arr[mask]
+
     months = []
     att_avg = []
     for month in range(1, 12):
@@ -111,7 +143,7 @@ def avg_over_month_all_stn(df, att, start=19010101, end=20991231):
 
         if len(att) > 0:
             months.append(month)
-            att_avg.append(np.nanmean(att))		# used nanmean to ignore nan values
+            att_avg.append(np.mean(att))
 
     return np.array(att_avg), np.array(months)
 
@@ -273,7 +305,7 @@ def measured_years_stn(df, stn, att=None, start=19010101, end=20991231):
 
 
 def plot_att_conditional(df, stn_arr, xatt, yatt, start=19010101, end=20991231,
-                         markers=MARKERS, month=np.arange(12)+1):
+                         markers=MARKERS):
     """Plot the average value of an attribute over another attribute from
     multiple stations.\n
     df = pandas.DataFrame, all data extracted from your csv file.\n
@@ -283,23 +315,19 @@ def plot_att_conditional(df, stn_arr, xatt, yatt, start=19010101, end=20991231,
     end = end date\n
     markers = a list of the shape and color of the markers in the plot."""
 
-    all_stn = len(stn_arr) < 1
-    if all_stn:
-        stn_arr = np.array(KNMI.Station.all_num)
+    if len(stn_arr) < 1:
+        xatts, yatts = avg_over_att_all_stn(df, xatt, yatt, start, end)
+        plt.plot(xatts, yatts, markers[0])
 
-    for i, stn in enumerate(stn_arr):
-        xatts, yatts = avg_over_att(df, stn, xatt, yatt, start, end)
-
-        if all_stn:
-            plt.plot(xatts, yatts, markers[0])
-
-        else:
+    else:
+        for i, stn in enumerate(stn_arr):
+            xatts, yatts = avg_over_att(df, stn, xatt, yatt, start, end)
             plt.plot(xatts, yatts, markers[i], label=KNMI.stn[stn].name)
 
     plt.xlabel(KNMI.attributes[xatt])
     plt.ylabel(KNMI.attributes[yatt])
 
-    if not all_stn:
+    if len(stn_arr) >= 1:
         plt.legend()
 
     plt.show()
@@ -353,23 +381,19 @@ def plot_att_season(df, stn_arr, att, start=19010101, end=20991231,
     end = end date\n
     markers = a list of the shape and color of the markers in the plot."""
 
-    all_stn = len(stn_arr) < 1
-    if all_stn:
-        stn_arr = np.array(KNMI.Station.all_num)
+    if len(stn_arr) < 1:
+        att_arr, seasons = avg_over_month_all_stn(df, att, start, end)
+        plt.plot(seasons, att_arr, markers[0])
 
-    for i, stn in enumerate(stn_arr):
-        att_arr, seasons = avg_over_season(df, stn, att, start, end)
-
-        if all_stn:
-            plt.plot(seasons, att_arr, markers[0])
-
-        else:
+    else:
+        for i, stn in enumerate(stn_arr):
+            att_arr, seasons = avg_over_season(df, stn, att, start, end)
             plt.plot(seasons, att_arr, markers[i], label=KNMI.stn[stn].name)
 
     plt.xlabel("Seizoenen")
     plt.ylabel(KNMI.attributes[att])
 
-    if not all_stn:
+    if len(stn_arr) >= 1:
         plt.legend()
 
     plt.show()
@@ -385,23 +409,20 @@ def plot_att_year(df, stn_arr, att, start=19010101, end=20991231,
     end = end date\n
     markers = a list of the shape and color of the markers in the plot."""
 
-    all_stn = len(stn_arr) < 1
-    if all_stn:
-        stn_arr = np.array(KNMI.Station.all_num)
+    if len(stn_arr) < 1:
+        att_arr, years = avg_over_year_all_stn(df, att, start, end)
+        plt.plot(years, att_arr, markers[0])
 
-    for i, stn in enumerate(stn_arr):
-        att_arr, years = avg_over_year(df, stn, att, start, end)
+    else:
 
-        if all_stn and len(att_arr) > 1:
-            plt.plot(years, att_arr, markers[0])
-
-        elif len(att_arr) > 1:
+        for i, stn in enumerate(stn_arr):
+            att_arr, years = avg_over_year(df, stn, att, start, end)
             plt.plot(years, att_arr, markers[i], label=KNMI.stn[stn].name)
 
     plt.xlabel("Jaren")
     plt.ylabel(KNMI.attributes[att])
 
-    if not all_stn:
+    if len(stn_arr) >= 1:
         plt.legend()
 
     plt.show()
@@ -505,7 +526,7 @@ def boxplot_att(df, att, start=19010101, end=20991231):
     plt.show()
 
 
-def covariance(atr1,atr2):
+def covariance(atr1, atr2):
     filename = KNMI.PATH
     final_filename = filename[:filename.rindex('.')] + "_final.csv"
     df = pd.read_csv(final_filename)
@@ -516,20 +537,52 @@ def covariance(atr1,atr2):
 def main():
     reduced_filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + ".csv"
     df = pd.read_csv(reduced_filename)
+    trn, dev, tst = ml.seperate_trn_dev_tst(df)
 
-    # tijdelijk: om te kijken of plot_att_month nog werkt
-    att = 'UN'
-    stations = []
-    plot_att_month(df, stations, att)
+    final_filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + "_final.csv"
+    df_final = pd.read_csv(final_filename)
 
-    # plot_measure_year(df, [])
-    # plot_measure_month(df, [])
-    plot_measure_month(df, [210, 215], "UN")
+    for att in df.columns.values[2:]:
+        print("\nNow analysing", KNMI.attributes[att])
 
-    # voorbeeld boxplot
-    data = df.loc[(df.STN > 210) & (df.STN < 280)]
-    boxplot_att(data, 'UN')
+        uni.att_values(df, att)
+        uni.boxplot_att(df, att, save=True)
+        uni.histogram_att(df, att, save=True)
 
-    covariance('TG','TX')
+        plot_att_year(df, [], att)
+        plot_att_month(df, [], att)
 
-main()
+        choice = ""
+        while choice != "y" and choice != "n":
+            choice = input("Do you want comparisons over this attribute?\n"
+                                + "yes (y), no (n): ")
+            choice.lower()
+
+        if choice == "n":
+            continue
+
+        for other_att in MEAN_ATTS:
+            print("Finding correlation of", KNMI.attributes[att], "with",
+                  KNMI.attributes[other_att])
+            print("Correlation is", df_final[att].corr(df[other_att]))
+
+            plot_att_conditional(df, [], att, other_att)
+
+            choice = ""
+            while choice != "y" and choice != "n" and choice != "s":
+                choice = input("Do you want regression over these two "
+                               + "attributes?\nyes (y), no (n), "
+                               + "yes with switched axis (s): ")
+                choice.lower()
+
+            if choice == "y":
+                poly = ml.try_poly_fit(trn, dev, att, other_att)
+                ml.plot_poly(tst, poly, att, other_att)
+
+            elif choice == "s":
+                poly = ml.try_poly_fit(trn, dev, other_att, att)
+                ml.plot_poly(tst, poly, other_att, att)
+
+
+if __name__ == "__main__":
+    main()
