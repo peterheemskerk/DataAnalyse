@@ -8,6 +8,7 @@ import numpy as np
 import KNMI
 import Univariate as uni
 import MachineLearning as ml
+import PlotBokeh as bok
 
 COLORS = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
@@ -435,6 +436,35 @@ def plot_att_year(df, stn_arr, att, start=19010101, end=20991231,
 
     plt.show()
 
+def plot_att_year_bok(df, stn_arr, att, start=19010101, end=20991231,
+                  markers=MARKERS):
+    """Plot the average value of an attribute over a year from multiple stations
+    \ndf = pandas.DataFrame, all data extracted from your csv file.\n
+    stn_arr = station array, an array of the numbers or names of the stations.\n
+    att = attribute\n
+    start = start date\n
+    end = end date\n
+    markers = a list of the shape and color of the markers in the plot."""
+
+    if len(stn_arr) < 1:
+        att_arr, years = avg_over_year_all_stn(df, att, start, end)
+        # plt.plot(years, att_arr, markers[0])
+        bok.plot_line(years, att_arr)			# bokeh 
+
+    else:
+
+        for i, stn in enumerate(stn_arr):
+            att_arr, years = avg_over_year(df, stn, att, start, end)
+            # plt.plot(years, att_arr, markers[i], label=KNMI.stn[stn].name)
+            bok.plot_line(years, att_arr)
+
+    # plt.xlabel("Jaren")
+    # plt.ylabel(KNMI.attributes[att])
+
+    # if len(stn_arr) >= 1:
+    #     plt.legend()
+
+    # plt.show()
 
 def plot_measure_month(df, stn_arr, att=None, start=19010101, end=20991231,
                        colors=COLORS):
@@ -560,6 +590,7 @@ def main():
     uni.histogram_att(df, att, save=False)
 
     plot_att_year(df, [], att)
+    plot_att_year_bok(df, [], att)
     plot_att_month(df, [], att)
 
     for other_att in MEAN_ATTS:
