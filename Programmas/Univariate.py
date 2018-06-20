@@ -3,13 +3,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import KNMI
-
+'''
 pd.set_option('display.width', 5000)
 pd.set_option('display.max_columns', 60)
 
 plt.rcParams['figure.figsize'] = (15, 5)
 
-
+'''
 def att_values(df, att):
     print("Mean: ",df[att].mean())
     print("Median: ",df[att].median())

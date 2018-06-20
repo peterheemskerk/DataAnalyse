@@ -105,8 +105,8 @@ def main():
     df = pd.read_csv(reduced_filename)
 
     trn, dev, tst = seperate_trn_dev_tst(df)
-    poly = try_poly_fit(trn, dev, "DDVEC", "FHVEC")
-    plot_poly(tst, poly, "DDVEC", "FHVEC")
+    poly = try_poly_fit(trn, dev, "DDVEC", "PX")
+    plot_poly(tst, poly, "DDVEC", "PX")
 
 
 if __name__ == "__main__":
