@@ -449,7 +449,7 @@ def plot_att_year_bok(df, stn_arr, att, start=19010101, end=20991231,
     if len(stn_arr) < 1:
         att_arr, years = avg_over_year_all_stn(df, att, start, end)
         # plt.plot(years, att_arr, markers[0])
-        bok.plot_line(years, att_arr)			# bokeh 
+        bok.plot_line(years, att_arr)			# bokeh
 
     else:
 
@@ -575,7 +575,7 @@ def covariance(atr1, atr2):
 def main():
     reduced_filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + ".csv"
     df = pd.read_csv(reduced_filename)
-    trn, dev, tst = ml.seperate_trn_dev_tst(df)
+    trn, dev, tst = ml.Lq_Fit.seperate_trn_dev_tst(df)
 
     final_filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + "_final.csv"
     df_final = pd.read_csv(final_filename)

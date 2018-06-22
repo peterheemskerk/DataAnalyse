@@ -1,8 +1,172 @@
+from numpy.linalg import lstsq
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
 import KNMI
+
+
+class Lq_Fit:
+
+    @staticmethod
+    def seperate_trn_dev_tst(df, dev_perc=0.1, tst_perc=0.1):
+        """Splits the dataframe in a train, developer and test set.\n
+        df = pandas.Dataframe, all the data extracted from your csv file.\n
+        dev_perc, tst_perc = the relative size of your developer and test set.\n
+        """
+
+        tst_part = int((1 - tst_perc) * len(df))
+        dev_part = int((1 - tst_perc - dev_perc) * len(df))
+
+        return np.split(df.sample(frac=1), [dev_part, tst_part])
+
+    def __init__(self, df, illegal=np.array([])):
+        self.atts = np.array([])
+        self.orders = np.array([], dtype=int)
+
+        self.best_atts = np.array([])
+        self.best_orders = np.array([], dtype=int)
+        self.best_error = 0
+
+        self.trn, self.dev, self.tst = Lq_Fit.seperate_trn_dev_tst(df)
+
+        self.illegal = illegal
+        self.all_atts = np.setdiff1d(df.columns.values[3:], illegal)
+
+        self.p_all = np.ones(len(self.all_atts)) / len(self.all_atts)
+        self.p_order = np.array([])
+        self.p_del = np.array([])
+
+    def make_X(self):
+        X_trn = self.trn.loc[:, self.atts].values
+        X_dev = self.dev.loc[:, self.atts].values
+
+        X_trn = np.power(X_trn, self.orders)
+        X_dev = np.power(X_dev, self.orders)
+
+        X_trn = np.append(X_trn, np.ones([len(self.trn), 1]), 1)
+        X_dev = np.append(X_dev, np.ones([len(self.dev), 1]), 1)
+        return X_trn, X_dev
+
+
+    def mutate(self):
+        r = np.random.random_sample() * (len(self.p_all[self.p_all != 0])
+                                         + len(self.p_order[self.p_order != 0])
+                                         + len(self.p_del[self.p_del != 0]))
+
+        if r < len(self.p_all[self.p_all != 0]):
+            att = np.random.choice(self.all_atts, p=self.p_all)
+            self.atts = np.append(self.best_atts, att)
+            self.orders = np.append(self.best_orders, 1)
+
+            self.p_all[self.all_atts == att] = 0
+            if np.sum(self.p_all) > 0:
+                self.p_all /= np.sum(self.p_all)
+
+        elif r < (len(self.p_all[self.p_all != 0])
+                  + len(self.p_order[self.p_order != 0])):
+
+            att = np.random.choice(self.best_atts, p=self.p_order)
+            biggest_order = np.amax(self.best_orders[self.best_atts == att])
+
+            self.atts = np.append(self.best_atts, att)
+            self.orders = np.append(self.best_orders, biggest_order + 1)
+
+            return str(att)
+
+        else:
+            index = np.random.choice(len(self.best_atts), p=self.p_del)
+            self.atts = np.delete(self.best_atts, index)
+            self.orders = np.delete(self.best_orders, index)
+
+            return index
+
+    def reset(self):
+        self.atts = np.array([])
+        self.orders = np.array([])
+
+        self.all_atts = np.setdiff1d(self.trn.columns.values[3:], self.illegal)
+
+    def reset_p(self, fit):
+        self.p_all = np.ones(len(self.all_atts))
+        self.p_all[np.in1d(self.all_atts, self.atts)] = 0
+        self.p_all /= np.sum(self.p_all)
+
+        self.p_order = np.absolute(fit) / np.sum(np.absolute(fit))
+        self.p_del = np.absolute(1 / fit) / np.sum(np.absolute(1 / fit))
+
+    def try_fit(self, y_att, prec=0.005):
+        y_trn = self.trn.loc[:, y_att].values
+        y_dev = self.dev.loc[:, y_att].values
+
+        self.p_all = self.p_all[self.all_atts != y_att]
+        self.p_all /= np.sum(self.p_all)
+        self.all_atts = self.all_atts[self.all_atts != y_att]
+
+        bench = np.mean((y_dev - np.ones(len(y_dev)) * np.mean(y_trn)) ** 2)
+        print("The benchmark is", bench)
+
+        best_err = bench
+        while (np.sum(self.p_all) > 0 or np.sum(self.p_order) > 0
+                                      or np.sum(self.p_del) > 0):
+
+            mut_elem = self.mutate()
+            X_trn, X_dev = self.make_X()
+
+            fit = lstsq(X_trn, y_trn, rcond=None)[0]
+            pred = fit.dot(X_dev.T)
+            err = np.mean((y_dev - pred) ** 2)
+
+            if (best_err * ((1 + prec) ** len(self.best_atts))
+                > err * ((1 + prec) ** len(self.atts))):
+
+                self.best_atts, self.best_orders = self.atts, self.orders,
+                best_err = err
+                print("Improvement found. relative improvement =",
+                      1 - err / bench, ", key =", self.show_best())
+                self.reset_p(fit[:-1])
+
+            elif type(mut_elem) == str:
+                self.p_order[self.best_atts == mut_elem] = 0
+                if np.sum(self.p_order):
+                    self.p_order /= np.sum(self.p_order)
+
+            elif type(mut_elem) == int:
+                self.p_del[mut_elem] = 0
+                if np.sum(self.p_del):
+                    self.p_del /= np.sum(self.p_del)
+
+
+        print("Local maximum is reached. The squared error is:",
+              self.test(y_att), "the best solution is:", self.show_best())
+        self.reset()
+
+        return self.best_atts, self.best_orders
+
+    def show_best(self):
+        show = []
+        for i, att in enumerate(self.best_atts):
+            show.append(str(att) + "^" + str(self.best_orders[i]))
+
+        return show
+
+    def test(self, y_att):
+        y_trn = self.trn.loc[:, y_att].values
+        y_tst = self.tst.loc[:, y_att].values
+
+        X_trn = self.trn.loc[:, self.best_atts].values
+        X_trn = np.power(X_trn, self.best_orders)
+        X_trn = np.append(X_trn, np.ones([len(self.trn), 1]), 1)
+
+        X_tst = self.tst.loc[:, self.best_atts].values
+        X_tst = np.power(X_tst, self.best_orders)
+        X_tst = np.append(X_tst, np.ones([len(self.tst), 1]), 1)
+
+        fit = lstsq(X_trn, y_trn, rcond=None)[0]
+        pred = fit.dot(X_tst.T)
+
+        self.error = np.mean((y_tst - pred) ** 2)
+        return self.error
 
 
 def mean_over_att(xatt_arr, yatt_arr):
@@ -56,17 +220,6 @@ def poly_fit(df, xatt, yatt, dim):
     return np.polyfit(xatt_arr, yatt_arr, dim)
 
 
-def seperate_trn_dev_tst(df, dev_perc=0.1, tst_perc=0.1):
-    """Splits the dataframe in a train, developer and test set.\n
-    df = pandas.Dataframe, all the data extracted from your csv file.\n
-    dev_perc, tst_perc = the relative size of your developer and test set.\n"""
-
-    tst_part = int((1 - tst_perc) * len(df))
-    dev_part = int((1 - tst_perc - dev_perc) * len(df))
-
-    return np.split(df.sample(frac=1), [dev_part, tst_part])
-
-
 def try_poly_fit(trn, dev, xatt, yatt, max_dips=3, prec=0.001):
     """Fits xatt and yatt to eachother for each polynomial up to the max_dim.
     And returns the best fit before overfitting.\n
@@ -101,12 +254,13 @@ def try_poly_fit(trn, dev, xatt, yatt, max_dips=3, prec=0.001):
 
 
 def main():
-    reduced_filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + "_reduced.csv"
+    reduced_filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + "_ml.csv"
     df = pd.read_csv(reduced_filename)
 
-    trn, dev, tst = seperate_trn_dev_tst(df)
-    poly = try_poly_fit(trn, dev, "DDVEC", "PX")
-    plot_poly(tst, poly, "DDVEC", "PX")
+    lq = Lq_Fit(df)
+    lq.try_fit("EV24")
+    # poly = try_poly_fit(trn, dev, "DDVEC", "FHVEC")
+    # plot_poly(tst, poly, "DDVEC", "FHVEC")
 
 
 if __name__ == "__main__":

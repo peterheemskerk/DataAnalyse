@@ -14,6 +14,24 @@ ATR_THRESH = 0.6
 ENT_THRESH = 0.6
 
 
+def make_ml_friendly(filename):
+    df = pd.read_csv(filename).loc[:, "STN":]
+
+    df.loc[:, KNMI.RED_ATT[1]:] -= df.loc[:, KNMI.RED_ATT[1]:].min()
+    df.loc[:, KNMI.RED_ATT[1]:] /= df.loc[:, KNMI.RED_ATT[1]:].max()
+
+    ddvec = df["DDVEC"]
+    del df["DDVEC"]
+    ddvec_sin = np.sin(np.deg2rad(ddvec))
+    ddvec_cos = np.cos(np.deg2rad(ddvec))
+    df.insert(2, "DDVEC_SIN", ddvec_sin)
+    df.insert(3, "DDVEC_COS", ddvec_cos)
+
+    ml_filename = filename[:filename.rindex('_')] + "_ml.csv"
+    df.to_csv(ml_filename)
+    return ml_filename
+
+
 # Write all entries to a new file that only takes entries and atributes that
 # occur a certain percentage of the time.
 def reduce_entries(filename, atributes):
@@ -39,6 +57,14 @@ def reduce_entries(filename, atributes):
                 line = raw.readline()
 
     return reduced_filename, n_lines
+
+
+def fill_entries(filename):
+    df = pd.read_csv(filename)
+    df = df.fillna(df.mean())
+    final_filename = filename[:filename.rindex('_')] + "_final.csv"
+    df.to_csv(final_filename)
+    return final_filename
 
 
 # Return an array of all the atributes that occur in at least ATR_THRESH
@@ -103,10 +129,15 @@ def main():
 
     print("Fill in all missing values with the mean of it's attribute...",
           end=' ', flush=True)
-    df = pd.read_csv(reduced_filename)
-    df = df.fillna(df.mean())
-    final_filename = reduced_filename[:reduced_filename.rindex('_')] + "_final.csv"
-    df.to_csv(final_filename)
+    final_filename = fill_entries(reduced_filename)
     print("Done.\nThe new file is called", final_filename)
+
+    final_filename = filename[:filename.rindex('.')] + "_final.csv"
+
+    print("Making a machine learning-friendly version of the data...", end=' ',
+          flush=True)
+    ml_filename = make_ml_friendly(final_filename)
+    print("Done.\nThe new file is called", ml_filename)
+
 
 main()

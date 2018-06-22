@@ -15,6 +15,10 @@ _DAY0 = 1
 stn = dict()
 attributes = dict()
 
+RED_ATT = ["DDVEC", "FHVEC", "FG", "FHX", "FHXH", "FHN", "FHNH", "FXX", "FXXH",
+           "TG", "TN", "TNH", "TX", "TXH", "SQ", "SP", "PG", "PX", "PN", "UG",
+           "UX", "UXH", "UNH", "EV24"]
+
 # The station class stores some information about each station
 class Station:
 
