@@ -1,3 +1,11 @@
+# This program contains three majos machine learning methods:
+# 1 - Multi Regression: predict the value of an attribute given other attributes
+#                       of the datapoint.
+# 2 - Classification:   predict in what season a few datapoints lie.
+# 3 - Regression:       draw a line that shows the correlation between two
+#                       attributes.
+
+
 from numpy.linalg import lstsq
 import numpy as np
 import pandas as pd
@@ -38,6 +46,9 @@ class Lq_Fit:
         self.p_del = np.array([])
 
     def make_X(self, atts=[], orders=[], trn=[], dev=[]):
+        """Make a 'X' matrix containing all data from the attributes in the key.
+        """
+
         if len(atts) < 1:
             atts, orders = self.atts, self.orders
 
@@ -55,6 +66,11 @@ class Lq_Fit:
         return X_trn, X_dev
 
     def mutate(self):
+        """One mutating can be:
+        adding an attribute from the allowed attributes.
+        adding a higher order of an existing attribute in the key.
+        deleting an attribute from the key."""
+
         r = np.random.random_sample() * (len(self.p_all[self.p_all != 0])
                                          + len(self.p_order[self.p_order != 0])
                                          + len(self.p_del[self.p_del != 0]))
@@ -87,6 +103,8 @@ class Lq_Fit:
             return index
 
     def reset(self):
+        """Reset the object when training over new data."""
+
         self.atts = np.array([])
         self.orders = np.array([], dtype=int)
 
@@ -109,6 +127,8 @@ class Lq_Fit:
         self.p_del = np.absolute(1 / fit) / np.sum(np.absolute(1 / fit))
 
     def season_pred(self, start_date, end_date, atts=[], orders=[]):
+        """Predict what season the data is when given a start and end-date."""
+
         if len(atts) < 1:
             atts, orders = self.best_atts, self.best_orders
 
@@ -134,6 +154,9 @@ class Lq_Fit:
 
     @staticmethod
     def season_fit(X_trn, X_dev, y_trn, y_dev):
+        """Fit the X and y data and return the error. Specialized for seasons.
+        """
+
         p = np.zeros(X_trn.shape[1])
         pred = np.empty([X_dev.shape[0], 4])
 
@@ -150,6 +173,9 @@ class Lq_Fit:
         return err, p
 
     def try_regr_fit(self, y_att, prec=0.01):
+        """Hillclimb through the allowed attributes to find a which attributes
+        are most usefull when predicting the y_att."""
+
         print("Start regression for:", y_att)
         self.reset()
 
@@ -201,6 +227,9 @@ class Lq_Fit:
         return self.best_atts, self.best_orders
 
     def try_season_fit(self, prec=0.01):
+        """Hillclimb through the allowed attributes to find a which attributes
+        are most usefull when predicting the season."""
+
         print("Start fitting seasons")
         self.reset()
 
@@ -247,6 +276,9 @@ class Lq_Fit:
         return self.best_atts, self.best_orders
 
     def show_best(self):
+        """Show which attributes are being used with what order in the current
+        fit."""
+
         show = []
         for i, att in enumerate(self.best_atts):
             show.append(str(att) + "^" + str(self.best_orders[i]))
@@ -254,6 +286,8 @@ class Lq_Fit:
         return np.array(show)
 
     def test(self, y_att):
+        """Test the best found fit for the y attribute using the test set."""
+
         y_trn = self.trn.loc[:, y_att].values
         y_tst = self.tst.loc[:, y_att].values
 
@@ -267,6 +301,9 @@ class Lq_Fit:
         return self.error
 
     def test_season(self):
+        """The 'test' function specialized for the classificaton problem with
+        the seasons."""
+
         y_trn = get_seasons(self.trn)
         y_tst = get_seasons(self.tst)
 
@@ -278,6 +315,10 @@ class Lq_Fit:
 
 
 def get_seasons(df):
+    """Return a dataframe with one column which has all dates converted to
+    seasons. The seasons are categorized by numbers: 0 is spring and so forth.
+    df = pandas.Dataframe"""
+
     dates = df.loc[:, "YYYYMMDD"].values
     dates %= 10000
     seasons = np.empty(len(dates), dtype=int)
@@ -385,15 +426,39 @@ def main():
     filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + "_ml.csv"
     df = pd.read_csv(filename)
 
-    illegal = np.array([])
-    lq = Lq_Fit(df, illegal=illegal)
-    # atts, orders = lq.try_season_fit()
-    atts, orders = np.array(["FHVEC", "DDVEC_SIN", "DDVEC_COS", "TG", "UG", "TG", "SP", "SQ", "TX"]), np.array([1, 1, 1, 1, 1, 2, 1, 1, 1, ])
+    # 1 ---- Multi-Regression -----
 
-    print(lq.season_pred(1960520, 19600620, atts, orders))
+    # Which attributes may not be used when fitting.
+    illegal = np.array(["TX", "TN", "TXH", "TNH"])
+    # Make an object of the 'Lq_Fit' class.
+    lq1 = Lq_Fit(df, illegal=illegal)
+    # Find which attributes are most usefull when predicting 'TG'
+    atts, orders = lq1.try_regr_fit("TG")
+    # Show the test results of the found attributes
+    lq1.test("TG")
 
-    # poly = try_poly_fit(trn, dev, "DDVEC", "FHVEC")
-    # plot_poly(tst, poly, "DDVEC", "FHVEC")
+
+    # 2 ---- Classification -----
+
+    # Leaving 'illegal' empty will allow all attributes to be used.
+    lq2 = Lq_Fit(df)
+    # A higher 'prec' will favour less attributes to be used and vice versa.
+    # The try_season_fit works almost the same as the try_regr_fit but is
+    # specialised for predicting seasons.
+    atts, orders = lq2.try_season_fit()
+    # See if the found attributes and orders accurately predict the season of
+    # the given start and end dates.
+    print(lq2.season_pred(1960520, 19600620, atts, orders))
+
+
+    # 3 ---- Regression -----
+
+    # Split your extracted data into a train, developer and test set.
+    trn, dev, tst = Lq_Fit.seperate_trn_dev_tst(df)
+    # Return the coefficients of the polygon that fits 'DDVEC' and 'FHVEC'
+    poly = try_poly_fit(trn, dev, "DDVEC", "FHVEC")
+    # Plot the found coefficients in between the data of 'DDVEC' and 'FHVEC'
+    plot_poly(tst, poly, "DDVEC", "FHVEC")
 
 
 if __name__ == "__main__":
