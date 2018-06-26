@@ -19,6 +19,9 @@ RED_ATT = ["DDVEC", "FHVEC", "FG", "FHX", "FHXH", "FHN", "FHNH", "FXX", "FXXH",
            "TG", "TN", "TNH", "TX", "TXH", "SQ", "SP", "PG", "PX", "PN", "UG",
            "UX", "UXH", "UNH", "EV24"]
 
+SEASONS = {"spring": (321, 620), "summer": (621, 920), "autumn": (921, 1220),
+           "winter": (1221, 320)}
+
 # The station class stores some information about each station
 class Station:
 
