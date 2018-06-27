@@ -565,6 +565,7 @@ def boxplot_att(df, att, start=19010101, end=20991231):
 
 
 def covariance(atr1, atr2):
+    '''Calculates the covariance of two given attributes to indicate how much the correlate  '''
     filename = KNMI.PATH
     final_filename = filename[:filename.rindex('.')] + "_final.csv"
     df = pd.read_csv(final_filename)
