@@ -372,8 +372,11 @@ def plot_poly(df, poly, xatt, yatt):
 
     plt.plot(xatt_mean, yatt_mean, "bo")
     plt.plot(xatt_mean, poly(xatt_mean), "r--")
-    plt.xlabel(KNMI.attributes[xatt])
-    plt.ylabel(KNMI.attributes[yatt])
+
+    if xatt in KNMI.attributes:
+        plt.xlabel(KNMI.attributes[xatt])
+    if yatt in KNMI.attributes:
+        plt.ylabel(KNMI.attributes[yatt])
     plt.show()
 
 
@@ -450,15 +453,14 @@ def main():
     # the given start and end dates.
     print(lq2.season_pred(1960520, 19600620, atts, orders))
 
-
     # 3 ---- Regression -----
 
     # Split your extracted data into a train, developer and test set.
     trn, dev, tst = Lq_Fit.seperate_trn_dev_tst(df)
-    # Return the coefficients of the polygon that fits 'DDVEC' and 'FHVEC'
-    poly = try_poly_fit(trn, dev, "DDVEC", "FHVEC")
-    # Plot the found coefficients in between the data of 'DDVEC' and 'FHVEC'
-    plot_poly(tst, poly, "DDVEC", "FHVEC")
+    # Return the coefficients of the polygon that fits 'DDVEC_SIN' and 'FHVEC'
+    poly = try_poly_fit(trn, dev, "DDVEC_SIN", "FHVEC")
+    # Plot the found coefficients in between the data of 'DDVEC_SIN' and 'FHVEC'
+    plot_poly(tst, poly, "DDVEC_SIN", "FHVEC")
 
 
 if __name__ == "__main__":
