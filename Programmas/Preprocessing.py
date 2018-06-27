@@ -130,7 +130,7 @@ def main():
     print("Fill in all missing values with the mean of it's attribute...",
           end=' ', flush=True)
     final_filename = fill_entries(reduced_filename)
-    print("Done.\nThe new file is called", final_filename)
+    print("Done.\nThe new file is called", final_filename, '\n')
 
     final_filename = filename[:filename.rindex('.')] + "_final.csv"
 

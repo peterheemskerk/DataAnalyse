@@ -429,6 +429,7 @@ def main():
     filename = KNMI.PATH[:KNMI.PATH.rindex('.')] + "_ml.csv"
     df = pd.read_csv(filename)
 
+
     # 1 ---- Multi-Regression -----
 
     # Which attributes may not be used when fitting.
@@ -452,6 +453,7 @@ def main():
     # See if the found attributes and orders accurately predict the season of
     # the given start and end dates.
     print(lq2.season_pred(1960520, 19600620, atts, orders))
+
 
     # 3 ---- Regression -----
 
