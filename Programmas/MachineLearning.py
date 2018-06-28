@@ -207,8 +207,8 @@ class Lq_Fit:
                 best_err = err
                 self.reset_p(fit[:-1])
 
-                print("Better key found, improvement upon benchmark =",
-                      str(int((1 - err / bench) * 100)) + "%, key =",
+                print("Improvement upon benchmark =",
+                      str(int((1 - err / bench) * 100)) + "%, new model:",
                       self.show_best())
 
             elif type(mut_elem) == str:
@@ -255,8 +255,8 @@ class Lq_Fit:
                 best_err = err
                 self.reset_p(p[:-1])
 
-                print("Better key found.", str(int((1 - err) * 100)) +
-                      "% of dates is guessed right, key =",
+                print("Now", str(int((1 - err) * 100)) +
+                      "% of dates is guessed right, new model =",
                       self.show_best())
 
             elif type(mut_elem) == str:
@@ -319,8 +319,7 @@ def get_seasons(df):
     seasons. The seasons are categorized by numbers: 0 is spring and so forth.
     df = pandas.Dataframe"""
 
-    dates = df.loc[:, "YYYYMMDD"].values
-    dates %= 10000
+    dates = df.loc[:, "YYYYMMDD"].values % 10000
     seasons = np.empty(len(dates), dtype=int)
 
     for i, season in enumerate(KNMI.SEASONS.keys()):
@@ -450,9 +449,27 @@ def main():
     # The try_season_fit works almost the same as the try_regr_fit but is
     # specialised for predicting seasons.
     atts, orders = lq2.try_season_fit()
-    # See if the found attributes and orders accurately predict the season of
-    # the given start and end dates.
-    print(lq2.season_pred(1960520, 19600620, atts, orders))
+    # Show a graph in which is shown which months are predicted as what season.
+    dates = []
+    seasons = []
+    for year in range(2000, 2005):
+        for month in range(1, 13):
+            start = year * 10000 + month * 100
+            end = year * 10000 + month * 100 + 31
+            dates.append(str(year) + "-" + str(month))
+
+            season = lq2.season_pred(start, end, atts, orders)
+            print(str(year) + '/' + str(month) + ':', season)
+
+            seasons.append(season + 1)
+
+    ticks = ["", "lente", "zomer", "herfst", "winter"]
+    plt.bar(dates, seasons)
+    plt.yticks(range(5), ticks)
+    plt.xticks(rotation=-80)
+    plt.xlabel("months")
+    plt.suptitle("seasons as predicted by the classifier")
+    plt.show()
 
 
     # 3 ---- Regression -----
