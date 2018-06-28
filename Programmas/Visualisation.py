@@ -342,6 +342,21 @@ def plot_att_conditional(df, stn_arr, xatt, yatt, start=19010101, end=20991231,
     plt.show()
 
 
+def plot_att_conditional_bok(df, stn_arr, xatt, yatt, start=19010101, end=20991231,
+                         markers=MARKERS):
+    """Plot the average value of an attribute over another attribute from
+    multiple stations.\n
+    df = pandas.DataFrame, all data extracted from your csv file.\n
+    stn_arr = station array, an array of the numbers or names of the stations.\n
+    att = attribute\n
+    start = start date\n
+    end = end date\n
+    markers = a list of the shape and color of the markers in the plot."""
+
+    xatts, yatts = avg_over_att_all_stn(df, xatt, yatt, start, end)
+    bok.plot_con(xatts, yatts, xatt, yatt)
+
+
 def plot_att_month(df, stn_arr, att, start=19010101, end=20991231,
                    colors=COLORS):
     """Plot the average value of an attribute over each month from multiple
@@ -377,6 +392,21 @@ def plot_att_month(df, stn_arr, att, start=19010101, end=20991231,
         plt.legend()
 
     plt.show()
+
+
+def plot_att_month_bok(df, stn_arr, att, start=19010101, end=20991231,
+                   colors=COLORS):
+    """Plot the average value of an attribute over each month from multiple
+    stations.\n
+    df = pandas.DataFrame, all data extracted from your csv file.\n
+    stn_arr = station array, an array of the numbers or names of the stations.\n
+    att = attribute\n
+    start = start date\n
+    end = end date\n
+    markers = a list of the shape and color of the markers in the plot."""
+
+    att_arr, months = avg_over_month_all_stn(df, att, start, end)
+    bok.plot_histogram(months, att_arr, att)
 
 
 def plot_att_season(df, stn_arr, att, start=19010101, end=20991231,
@@ -449,14 +479,14 @@ def plot_att_year_bok(df, stn_arr, att, start=19010101, end=20991231,
     if len(stn_arr) < 1:
         att_arr, years = avg_over_year_all_stn(df, att, start, end)
         # plt.plot(years, att_arr, markers[0])
-        bok.plot_line(years, att_arr)			# bokeh
+        bok.plot_line(years, att_arr, att)			# bokeh
 
     else:
 
         for i, stn in enumerate(stn_arr):
             att_arr, years = avg_over_year(df, stn, att, start, end)
             # plt.plot(years, att_arr, markers[i], label=KNMI.stn[stn].name)
-            bok.plot_line(years, att_arr)
+            bok.plot_line(years, att_arr, att)
 
     # plt.xlabel("Jaren")
     # plt.ylabel(KNMI.attributes[att])
